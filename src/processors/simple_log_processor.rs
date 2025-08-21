@@ -1,0 +1,68 @@
+use ctor::ctor;
+use minificpp::{
+    Descriptor, Logger, ProcessContext, Processor, ProcessorBridge, Property, Relationship,
+    Session, SessionFactory,
+};
+
+struct SimpleLogProcessor {
+    logger: Logger,
+}
+
+impl SimpleLogProcessor {
+    const SUCCESS_RELATIONSHIP: Relationship = Relationship::new(
+        "success",
+        "FlowFiles are transferred here after logging",
+    );
+
+    const WHAT_TO_LOG_PROPERTY: Property = Property::new(
+    "text",
+    "what to log",
+    false,
+    false,
+    false,
+    );
+}
+
+impl Processor for SimpleLogProcessor {
+    fn new(logger: Logger) -> Self {
+        Self { logger }
+    }
+
+    fn initialize(&mut self, descriptor: &mut Descriptor) {
+        descriptor.set_supported_relationships(&[SimpleLogProcessor::SUCCESS_RELATIONSHIP]);
+        descriptor.set_supported_properties(&[SimpleLogProcessor::WHAT_TO_LOG_PROPERTY])
+    }
+
+    fn on_trigger(&mut self, _context: &ProcessContext, session: &mut Session) {
+        println!("println from onTrigger!");
+        self.logger.info("Rust says hello from onTrigger!");
+
+        if let Some(flow_file) = session.get() {
+            session.transfer(flow_file, "success");
+        }
+    }
+
+    fn on_schedule(&mut self, context: &ProcessContext, session_factory: &mut SessionFactory) {
+        let what_to_log = context.get_property(&SimpleLogProcessor::WHAT_TO_LOG_PROPERTY, None);
+        self.logger.info(format!("on_schedule: {:?}", what_to_log).as_str());
+    }
+
+    fn get_name(&self) -> &'static str {
+        "SimpleLogProcessor"
+    }
+}
+
+#[ctor]
+#[no_mangle]
+fn on_load_register() {
+    let bridge = ProcessorBridge::<SimpleLogProcessor>::new(
+        "RustProcessors",
+        "SimpleLogProcessor",
+        "rust::SimpleLogProcessor",
+        "A simple processor that logs some text during onSchedule and onTrigger.",
+    );
+
+    unsafe {
+        minificpp::sys::MinifiRegisterProcessorClass(&bridge.description);
+    }
+}
