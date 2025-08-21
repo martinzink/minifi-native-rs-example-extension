@@ -1,0 +1,11 @@
+[package]
+name = "minificpp-log-processor"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# This processor depends on our safe `minifi` wrapper crate.
+minificpp = { path = "../minificpp-rs" }
