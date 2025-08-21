@@ -1,5 +1,5 @@
 [package]
-name = "minificpp-rust-log-processor"
+name = "minificpp-rust-example-processor"
 version = "0.1.0"
 edition = "2021"
 
