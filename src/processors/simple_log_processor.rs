@@ -6,6 +6,7 @@ use minificpp::{
 
 struct SimpleLogProcessor {
     logger: Logger,
+    what_to_log: Option<String>,
 }
 
 impl SimpleLogProcessor {
@@ -25,7 +26,7 @@ impl SimpleLogProcessor {
 
 impl Processor for SimpleLogProcessor {
     fn new(logger: Logger) -> Self {
-        Self { logger }
+        Self { logger, what_to_log: None }
     }
 
     fn initialize(&mut self, descriptor: &mut Descriptor) {
@@ -34,8 +35,7 @@ impl Processor for SimpleLogProcessor {
     }
 
     fn on_trigger(&mut self, _context: &ProcessContext, session: &mut Session) {
-        println!("println from onTrigger!");
-        self.logger.info("Rust says hello from onTrigger!");
+        self.logger.info(format!("rusty on_trigger: {:?}", self.what_to_log).as_str());
 
         if let Some(flow_file) = session.get() {
             session.transfer(flow_file, "success");
@@ -43,8 +43,8 @@ impl Processor for SimpleLogProcessor {
     }
 
     fn on_schedule(&mut self, context: &ProcessContext, session_factory: &mut SessionFactory) {
-        let what_to_log = context.get_property(&SimpleLogProcessor::WHAT_TO_LOG_PROPERTY, None);
-        self.logger.info(format!("on_schedule: {:?}", what_to_log).as_str());
+        self.what_to_log = context.get_property(&SimpleLogProcessor::WHAT_TO_LOG_PROPERTY, None);
+        self.logger.info(format!("rusty on_schedule: {:?}", self.what_to_log).as_str());
     }
 
     fn get_name(&self) -> &'static str {
