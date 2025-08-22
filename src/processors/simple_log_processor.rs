@@ -21,6 +21,7 @@ impl SimpleLogProcessor {
     false,
     false,
     false,
+    Some("Default text to log.")
     );
 }
 
