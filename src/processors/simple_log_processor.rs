@@ -1,7 +1,7 @@
 use std::string::ToString;
 use ctor::ctor;
 use minifi_native::{
-    Descriptor, Logger, ProcessContext, Processor, ProcessorBridge, Property, Relationship,
+    Descriptor, Logger, ProcessContext, Processor, ProcessorBridge, Property, StandardPropertyValidator, Relationship,
     Session, SessionFactory,
 };
 
@@ -26,16 +26,16 @@ impl Processor for SimpleLogProcessor {
 
     fn initialize(&mut self, descriptor: &mut Descriptor) {
         descriptor.set_supported_relationships(&[SimpleLogProcessor::SUCCESS_RELATIONSHIP]);
-        let what_to_log_property: Property = Property::new(
-            self.what_to_log_property_name.clone(),
-            "what to log".to_string(),
-            false,
-            false,
-            false,
-            Some("Default text to log.".to_string())
-        );
-        let properties = [what_to_log_property];
-        descriptor.set_supported_properties(&properties)
+        let what_to_log_property: Property = Property {
+            name: self.what_to_log_property_name.clone(),
+            description: "what to log".to_string(),
+            is_required: false,
+            is_sensitive: false,
+            supports_expr_lang: false,
+            default_value: Some("Default text to log.".to_string()),
+            validator: StandardPropertyValidator::AlwaysValidValidator,
+        };
+        descriptor.set_supported_properties(&[what_to_log_property])
     }
 
     fn on_trigger(&mut self, _context: &ProcessContext, session: &mut Session) {
