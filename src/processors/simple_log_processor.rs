@@ -1,3 +1,4 @@
+use std::string::ToString;
 use ctor::ctor;
 use minifi_native::{
     Descriptor, Logger, ProcessContext, Processor, ProcessorBridge, Property, Relationship,
@@ -7,6 +8,7 @@ use minifi_native::{
 struct SimpleLogProcessor {
     logger: Logger,
     what_to_log: Option<String>,
+    what_to_log_property_name: String,
 }
 
 impl SimpleLogProcessor {
@@ -15,24 +17,25 @@ impl SimpleLogProcessor {
         "FlowFiles are transferred here after logging",
     );
 
-    const WHAT_TO_LOG_PROPERTY: Property = Property::new(
-    "text",
-    "what to log",
-    false,
-    false,
-    false,
-    Some("Default text to log.")
-    );
 }
 
 impl Processor for SimpleLogProcessor {
     fn new(logger: Logger) -> Self {
-        Self { logger, what_to_log: None }
+        Self { logger, what_to_log: None, what_to_log_property_name: "text".to_string() }
     }
 
     fn initialize(&mut self, descriptor: &mut Descriptor) {
         descriptor.set_supported_relationships(&[SimpleLogProcessor::SUCCESS_RELATIONSHIP]);
-        descriptor.set_supported_properties(&[SimpleLogProcessor::WHAT_TO_LOG_PROPERTY])
+        let what_to_log_property: Property = Property::new(
+            self.what_to_log_property_name.clone(),
+            "what to log".to_string(),
+            false,
+            false,
+            false,
+            Some("Default text to log.".to_string())
+        );
+        let properties = [what_to_log_property];
+        descriptor.set_supported_properties(&properties)
     }
 
     fn on_trigger(&mut self, _context: &ProcessContext, session: &mut Session) {
@@ -44,7 +47,7 @@ impl Processor for SimpleLogProcessor {
     }
 
     fn on_schedule(&mut self, context: &ProcessContext, _session_factory: &mut SessionFactory) {
-        self.what_to_log = context.get_property(&SimpleLogProcessor::WHAT_TO_LOG_PROPERTY, None);
+        self.what_to_log = context.get_property(self.what_to_log_property_name.as_str(), None);
         self.logger.info(format!("rusty on_schedule: {:?}", self.what_to_log).as_str());
     }
 
