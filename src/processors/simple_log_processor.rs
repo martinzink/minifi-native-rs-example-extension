@@ -42,7 +42,7 @@ impl Processor for SimpleLogProcessor {
         }
     }
 
-    fn on_schedule(&mut self, context: &ProcessContext, session_factory: &mut SessionFactory) {
+    fn on_schedule(&mut self, context: &ProcessContext, _session_factory: &mut SessionFactory) {
         self.what_to_log = context.get_property(&SimpleLogProcessor::WHAT_TO_LOG_PROPERTY, None);
         self.logger.info(format!("rusty on_schedule: {:?}", self.what_to_log).as_str());
     }
