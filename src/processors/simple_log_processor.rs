@@ -1,5 +1,5 @@
 use ctor::ctor;
-use minificpp::{
+use minifi_native::{
     Descriptor, Logger, ProcessContext, Processor, ProcessorBridge, Property, Relationship,
     Session, SessionFactory,
 };
@@ -63,6 +63,6 @@ fn on_load_register() {
     );
 
     unsafe {
-        minificpp::sys::MinifiRegisterProcessorClass(&bridge.description);
+        minifi_native::sys::MinifiRegisterProcessorClass(&bridge.description);
     }
 }

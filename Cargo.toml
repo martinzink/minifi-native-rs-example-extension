@@ -1,5 +1,5 @@
 [package]
-name = "minificpp-rust-extension"
+name = "minifi-native-rs-example-extension"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,5 +8,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # This processor depends on our safe `minifi` wrapper crate.
-minificpp = { path = "../minificpp-rs" }
+minifi-native = { path = "../minifi-native-rs" }
 ctor = "0.2"
