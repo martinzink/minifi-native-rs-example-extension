@@ -76,7 +76,7 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
 }
 
 #[ctor]
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn register_simple_source_processor() {
     let mut my_rust_processor = ProcessorBridge::<SimpleSourceProcessor<CffiLogger>>::new(
         "rust_extension",
