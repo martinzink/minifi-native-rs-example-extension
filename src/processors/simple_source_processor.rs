@@ -1,6 +1,9 @@
 use ctor::ctor;
-use minifi_native::ProcessorInputRequirement::{Forbidden};
-use minifi_native::{Logger, ProcessContext, Processor, ProcessorBridge, Property, ProcessSession, ProcessSessionFactory, StandardPropertyValidator, Relationship, CffiLogger};
+use minifi_native::ProcessorInputRequirement::Forbidden;
+use minifi_native::{
+    CffiLogger, Logger, ProcessContext, ProcessSession, ProcessSessionFactory, Processor,
+    ProcessorBridge, Property, Relationship, StandardPropertyValidator,
+};
 
 #[derive(Debug)]
 struct SimpleSourceProcessor<L: Logger> {
@@ -38,12 +41,14 @@ const SHOUT_PROPERTY: Property = Property {
 
 impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
     fn new(logger: L) -> Self {
-        Self {
-            logger
-        }
+        Self { logger }
     }
 
-    fn on_trigger<P, S>(&mut self, _context: &P, session: &mut S) where P: ProcessContext, S: ProcessSession{
+    fn on_trigger<P, S>(&mut self, _context: &P, session: &mut S)
+    where
+        P: ProcessContext,
+        S: ProcessSession,
+    {
         self.logger
             .trace(format!("on_trigger exit {:?}", self).as_str());
 
@@ -57,7 +62,11 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
             .trace(format!("on_trigger exit {:?}", self).as_str());
     }
 
-    fn on_schedule<P, F>(&mut self, _context: &P, _session_factory: &mut F) where P: ProcessContext, F: ProcessSessionFactory {
+    fn on_schedule<P, F>(&mut self, _context: &P, _session_factory: &mut F)
+    where
+        P: ProcessContext,
+        F: ProcessSessionFactory,
+    {
         self.logger
             .trace(format!("on_schedule entry {:?}", self).as_str());
 
@@ -80,10 +89,7 @@ fn register_simple_source_processor() {
     my_rust_processor.supports_dynamic_properties = false;
     my_rust_processor.supports_dynamic_relationships = false;
     my_rust_processor.relationships = vec![SUCCESS_RELATIONSHIP];
-    my_rust_processor.properties = vec![
-        CONTENT_PROPERTY,
-        SHOUT_PROPERTY,
-    ];
+    my_rust_processor.properties = vec![CONTENT_PROPERTY, SHOUT_PROPERTY];
 
     my_rust_processor.register_class();
 }

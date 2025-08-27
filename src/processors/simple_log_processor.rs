@@ -1,6 +1,9 @@
 use ctor::ctor;
 use minifi_native::ProcessorInputRequirement::Allowed;
-use minifi_native::{LogLevel, Logger, ProcessContext, Processor, ProcessorBridge, Property, ProcessSession, ProcessSessionFactory, StandardPropertyValidator, Relationship, CffiLogger};
+use minifi_native::{
+    CffiLogger, LogLevel, Logger, ProcessContext, ProcessSession, ProcessSessionFactory, Processor,
+    ProcessorBridge, Property, Relationship, StandardPropertyValidator,
+};
 use strum::VariantNames;
 
 #[derive(Debug)]
@@ -34,25 +37,31 @@ impl<L: Logger> Processor<L> for SimpleLogProcessor<L> {
         }
     }
 
-    fn on_trigger<P, S>(&mut self, _context: &P, session: &mut S) where P: ProcessContext, S: ProcessSession{
+    fn on_trigger<P, S>(&mut self, _context: &P, session: &mut S)
+    where
+        P: ProcessContext,
+        S: ProcessSession,
+    {
         self.logger
             .trace(format!("on_trigger entry {:?}", self).as_str());
 
-
-         if let Some(input_ff) = session.get() {
-             self.logger.trace(format!("Got flowfile").as_str());
-             if let Some(content) = session.read(&input_ff) {
-                 self.logger.log(self.log_level, content.as_str());
-             }
-             session.transfer(input_ff, SUCCESS_RELATIONSHIP.name);
-
-         }
+        if let Some(input_ff) = session.get() {
+            self.logger.trace(format!("Got flowfile").as_str());
+            if let Some(content) = session.read(&input_ff) {
+                self.logger.log(self.log_level, content.as_str());
+            }
+            session.transfer(input_ff, SUCCESS_RELATIONSHIP.name);
+        }
 
         self.logger
             .trace(format!("on_trigger exit {:?}", self).as_str());
     }
 
-    fn on_schedule<P, F>(&mut self, context: &P, _session_factory: &mut F) where P: ProcessContext, F: ProcessSessionFactory {
+    fn on_schedule<P, F>(&mut self, context: &P, _session_factory: &mut F)
+    where
+        P: ProcessContext,
+        F: ProcessSessionFactory,
+    {
         self.logger
             .trace(format!("on_schedule entry {:?}", self).as_str());
 
@@ -80,9 +89,7 @@ fn register_simple_log_processor() {
     my_rust_processor.supports_dynamic_properties = false;
     my_rust_processor.supports_dynamic_relationships = false;
     my_rust_processor.relationships = vec![SUCCESS_RELATIONSHIP];
-    my_rust_processor.properties = vec![
-        LOG_LEVEL,
-    ];
+    my_rust_processor.properties = vec![LOG_LEVEL];
 
     my_rust_processor.register_class();
 }
