@@ -8,6 +8,7 @@ use minifi_native::{
 #[derive(Debug)]
 struct SimpleSourceProcessor<L: Logger> {
     logger: L,
+    content: String,
 }
 
 const SUCCESS_RELATIONSHIP: Relationship = Relationship {
@@ -41,7 +42,7 @@ const SHOUT_PROPERTY: Property = Property {
 
 impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
     fn new(logger: L) -> Self {
-        Self { logger }
+        Self { logger, content: String::new() }
     }
 
     fn on_trigger<P, S>(&mut self, _context: &P, session: &mut S)
@@ -52,9 +53,9 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
         self.logger
             .trace(format!("on_trigger exit {:?}", self).as_str());
 
-        if let Some(new_ff) = session.create() {
+        if let Some(mut new_ff) = session.create() {
             self.logger.info(format!("Created new flowfile").as_str());
-            session.write(&new_ff, "Its just you and me");
+            session.write(&mut new_ff, self.content.as_str());
             session.transfer(new_ff, SUCCESS_RELATIONSHIP.name);
         }
 
@@ -62,7 +63,7 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
             .trace(format!("on_trigger exit {:?}", self).as_str());
     }
 
-    fn on_schedule<P, F>(&mut self, _context: &P, _session_factory: &mut F)
+    fn on_schedule<P, F>(&mut self, context: &P, _session_factory: &mut F)
     where
         P: ProcessContext,
         F: ProcessSessionFactory,
@@ -70,11 +71,14 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
         self.logger
             .trace(format!("on_schedule entry {:?}", self).as_str());
 
+        self.content = context.get_property(CONTENT_PROPERTY.name, None).unwrap_or("Default content".to_string());
+
         self.logger
             .trace(format!("on_schedule exit {:?}", self).as_str());
     }
 }
 
+#[cfg(not(test))]
 #[ctor]
 #[unsafe(no_mangle)]
 fn register_simple_source_processor() {
@@ -93,3 +97,7 @@ fn register_simple_source_processor() {
 
     my_rust_processor.register_class();
 }
+
+
+#[cfg(test)]
+mod tests;

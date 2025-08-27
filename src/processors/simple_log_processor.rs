@@ -75,6 +75,7 @@ impl<L: Logger> Processor<L> for SimpleLogProcessor<L> {
     }
 }
 
+#[cfg(not(test))]
 #[ctor]
 #[unsafe(no_mangle)]
 fn register_simple_log_processor() {
