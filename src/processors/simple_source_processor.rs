@@ -1,7 +1,7 @@
 use minifi_native::ProcessorInputRequirement::{Forbidden};
 use minifi_native::{
     CffiLogger, Logger, ProcessContext, ProcessSession, ProcessSessionFactory, Processor,
-    ProcessorBridge, Property, Relationship, StandardPropertyValidator,
+    ProcessorDefinition, Property, Relationship, StandardPropertyValidator,
 };
 
 #[derive(Debug)]
@@ -82,28 +82,28 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
 }
 
 #[cfg_attr(test, allow(dead_code))]
-fn create_processor_bridge() -> ProcessorBridge<SimpleSourceProcessor<CffiLogger>> {
-    let mut my_rust_processor = ProcessorBridge::<SimpleSourceProcessor<CffiLogger>>::new(
+fn create_simple_source_processor_definition() -> ProcessorDefinition<SimpleSourceProcessor<CffiLogger>> {
+    let mut simple_source_processor_definition = ProcessorDefinition::<SimpleSourceProcessor<CffiLogger>>::new(
         "rust_extension",
         "mzink.processors.rust.SimpleSourceProcessor",
         "A rust processor that acts as a source.",
     );
 
-    my_rust_processor.is_single_threaded = true;
-    my_rust_processor.input_requirement = Forbidden;
-    my_rust_processor.supports_dynamic_properties = false;
-    my_rust_processor.supports_dynamic_relationships = false;
-    my_rust_processor.relationships = vec![SUCCESS_RELATIONSHIP];
-    my_rust_processor.properties = vec![CONTENT_PROPERTY, SHOUT_PROPERTY];
+    simple_source_processor_definition.is_single_threaded = true;
+    simple_source_processor_definition.input_requirement = Forbidden;
+    simple_source_processor_definition.supports_dynamic_properties = false;
+    simple_source_processor_definition.supports_dynamic_relationships = false;
+    simple_source_processor_definition.relationships = vec![SUCCESS_RELATIONSHIP];
+    simple_source_processor_definition.properties = vec![CONTENT_PROPERTY, SHOUT_PROPERTY];
 
-    my_rust_processor
+    simple_source_processor_definition
 }
 
 #[cfg(not(test))]
 #[ctor::ctor]
 #[unsafe(no_mangle)]
 fn register_simple_source_processor() {
-    crate::processors::simple_source_processor::create_processor_bridge().register_class();
+    create_simple_source_processor_definition().register_class();
 }
 
 

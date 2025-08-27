@@ -1,7 +1,7 @@
 use minifi_native::ProcessorInputRequirement::Allowed;
 use minifi_native::{
     CffiLogger, LogLevel, Logger, ProcessContext, ProcessSession, ProcessSessionFactory, Processor,
-    ProcessorBridge, Property, Relationship, StandardPropertyValidator,
+    ProcessorDefinition, Property, Relationship, StandardPropertyValidator,
 };
 use strum::VariantNames;
 
@@ -76,27 +76,27 @@ impl<L: Logger> Processor<L> for SimpleLogProcessor<L> {
 }
 
 #[cfg_attr(test, allow(dead_code))]
-fn create_processor_bridge() -> ProcessorBridge<SimpleLogProcessor<CffiLogger>> {
-    let mut my_rust_processor = ProcessorBridge::<SimpleLogProcessor<CffiLogger>>::new(
+fn simple_log_processor_definition() -> ProcessorDefinition<SimpleLogProcessor<CffiLogger>> {
+    let mut simple_log_processor_definition = ProcessorDefinition::<SimpleLogProcessor<CffiLogger>>::new(
         "rust_extension",
         "mzink.processors.rust.SimpleLogProcessor",
         "A rust processor that tests the upcoming C API, trying out most of the features",
     );
 
-    my_rust_processor.is_single_threaded = true;
-    my_rust_processor.input_requirement = Allowed;
-    my_rust_processor.supports_dynamic_properties = false;
-    my_rust_processor.supports_dynamic_relationships = false;
-    my_rust_processor.relationships = vec![SUCCESS_RELATIONSHIP];
-    my_rust_processor.properties = vec![LOG_LEVEL];
-    my_rust_processor
+    simple_log_processor_definition.is_single_threaded = true;
+    simple_log_processor_definition.input_requirement = Allowed;
+    simple_log_processor_definition.supports_dynamic_properties = false;
+    simple_log_processor_definition.supports_dynamic_relationships = false;
+    simple_log_processor_definition.relationships = vec![SUCCESS_RELATIONSHIP];
+    simple_log_processor_definition.properties = vec![LOG_LEVEL];
+    simple_log_processor_definition
 }
 
 #[cfg(not(test))]
 #[ctor::ctor]
 #[unsafe(no_mangle)]
 fn register_simple_log_processor() {
-    create_processor_bridge().register_class();
+    simple_log_processor_definition().register_class();
 }
 
 #[cfg(test)]
