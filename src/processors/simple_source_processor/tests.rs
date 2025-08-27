@@ -2,7 +2,7 @@ use minifi_native::{MockLogger, MockProcessContext, MockProcessSession, MockProc
 use super::*;
 
 #[test]
-fn test_on_trigger() {
+fn simple_test() {
     let mut processor = SimpleSourceProcessor::new(MockLogger::new());
     let mut context = MockProcessContext::new();
     context.properties.insert("Content".to_string(), "Hello, World!".to_string());
@@ -13,6 +13,6 @@ fn test_on_trigger() {
     {
         let mut session = MockProcessSession::new();
         processor.on_trigger(&context, &mut session);
-        assert_eq!(session.transferred_flow_files.get("success").unwrap().content, "Hello, World!")
+        assert_eq!(session.transferred_flow_files.get(SUCCESS_RELATIONSHIP.name).unwrap().content, "Hello, World!")
     }
 }

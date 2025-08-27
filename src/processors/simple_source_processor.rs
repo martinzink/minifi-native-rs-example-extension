@@ -1,5 +1,4 @@
-use ctor::ctor;
-use minifi_native::ProcessorInputRequirement::Forbidden;
+use minifi_native::ProcessorInputRequirement::{Forbidden};
 use minifi_native::{
     CffiLogger, Logger, ProcessContext, ProcessSession, ProcessSessionFactory, Processor,
     ProcessorBridge, Property, Relationship, StandardPropertyValidator,
@@ -71,17 +70,19 @@ impl<L: Logger> Processor<L> for SimpleSourceProcessor<L> {
         self.logger
             .trace(format!("on_schedule entry {:?}", self).as_str());
 
-        self.content = context.get_property(CONTENT_PROPERTY.name, None).unwrap_or("Default content".to_string());
+        let shouting = context.get_property(SHOUT_PROPERTY.name, None).and_then(|s| s.parse::<bool>().ok()).unwrap_or(false);
 
+        self.content = context.get_property(CONTENT_PROPERTY.name, None).unwrap_or("Default content".to_string());
+        if shouting {
+            self.content = self.content.to_uppercase();
+        }
         self.logger
             .trace(format!("on_schedule exit {:?}", self).as_str());
     }
 }
 
-#[cfg(not(test))]
-#[ctor]
-#[unsafe(no_mangle)]
-fn register_simple_source_processor() {
+#[cfg_attr(test, allow(dead_code))]
+fn create_processor_bridge() -> ProcessorBridge<SimpleSourceProcessor<CffiLogger>> {
     let mut my_rust_processor = ProcessorBridge::<SimpleSourceProcessor<CffiLogger>>::new(
         "rust_extension",
         "mzink.processors.rust.SimpleSourceProcessor",
@@ -95,7 +96,14 @@ fn register_simple_source_processor() {
     my_rust_processor.relationships = vec![SUCCESS_RELATIONSHIP];
     my_rust_processor.properties = vec![CONTENT_PROPERTY, SHOUT_PROPERTY];
 
-    my_rust_processor.register_class();
+    my_rust_processor
+}
+
+#[cfg(not(test))]
+#[ctor::ctor]
+#[unsafe(no_mangle)]
+fn register_simple_source_processor() {
+    crate::processors::simple_source_processor::create_processor_bridge().register_class();
 }
 
 

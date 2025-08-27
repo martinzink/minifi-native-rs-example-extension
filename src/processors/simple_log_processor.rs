@@ -1,10 +1,10 @@
-use ctor::ctor;
 use minifi_native::ProcessorInputRequirement::Allowed;
 use minifi_native::{
     CffiLogger, LogLevel, Logger, ProcessContext, ProcessSession, ProcessSessionFactory, Processor,
     ProcessorBridge, Property, Relationship, StandardPropertyValidator,
 };
 use strum::VariantNames;
+
 
 #[derive(Debug)]
 struct SimpleLogProcessor<L: Logger> {
@@ -75,10 +75,8 @@ impl<L: Logger> Processor<L> for SimpleLogProcessor<L> {
     }
 }
 
-#[cfg(not(test))]
-#[ctor]
-#[unsafe(no_mangle)]
-fn register_simple_log_processor() {
+#[cfg_attr(test, allow(dead_code))]
+fn create_processor_bridge() -> ProcessorBridge<SimpleLogProcessor<CffiLogger>> {
     let mut my_rust_processor = ProcessorBridge::<SimpleLogProcessor<CffiLogger>>::new(
         "rust_extension",
         "mzink.processors.rust.SimpleLogProcessor",
@@ -91,6 +89,15 @@ fn register_simple_log_processor() {
     my_rust_processor.supports_dynamic_relationships = false;
     my_rust_processor.relationships = vec![SUCCESS_RELATIONSHIP];
     my_rust_processor.properties = vec![LOG_LEVEL];
-
-    my_rust_processor.register_class();
+    my_rust_processor
 }
+
+#[cfg(not(test))]
+#[ctor::ctor]
+#[unsafe(no_mangle)]
+fn register_simple_log_processor() {
+    create_processor_bridge().register_class();
+}
+
+#[cfg(test)]
+mod tests;
