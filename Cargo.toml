@@ -3,6 +3,12 @@ name = "minifi-native-rs-example-extension"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+panic = "abort"
+
+[profile.dev]
+panic = "abort"
+
 [lib]
 crate-type = ["cdylib"]
 
@@ -10,3 +16,4 @@ crate-type = ["cdylib"]
 # This processor depends on our safe `minifi` wrapper crate.
 minifi-native = { path = "../minifi-native-rs" }
 ctor = "0.2"
+strum = "0.27.2"
